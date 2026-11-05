@@ -59,7 +59,8 @@ function snapshot(root) {
     const mode = stat.mode & 0o777;
     if (stat.isSymbolicLink()) out[rel] = ['link', fs.readlinkSync(p)];
     else if (stat.isDirectory()) {
-      out[rel] = ['dir', mode, Math.floor(stat.mtimeMs)];
+      // Windows' read-only flag has no effect on folders, so it is not preserved.
+      out[rel] = ['dir', IS_WINDOWS ? 0 : mode, Math.floor(stat.mtimeMs)];
       for (const name of fs.readdirSync(p)) visit(path.join(p, name), `${rel}/${name}`);
     } else out[rel] = ['file', mode, Math.floor(stat.mtimeMs), fs.readFileSync(p, 'hex')];
   };
