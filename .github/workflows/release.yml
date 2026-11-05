@@ -23,6 +23,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
       - run: npm test
+      - run: npm run test:app
 
   windows:
     needs: test
@@ -35,9 +36,19 @@ jobs:
       - run: npm ci
       - run: pwsh scripts/build-windows.ps1
       - run: node scripts/cross-check.mjs lock dist/PasswordProtect.exe cross windows
+      - run: npm run build:win
+      - name: Test the built app
+        run: npm run test:app
+        env:
+          PACKAGED_APP: release/win-unpacked/Password Protect.exe
       - uses: actions/upload-artifact@v4
         with:
           name: windows
+          path: release/PasswordProtect-*.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-windows
           path: dist/PasswordProtect.exe
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
@@ -55,12 +66,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
-      - run: npm run build:mac
+      - run: npm run build:cli
       - run: node scripts/cross-check.mjs lock dist/protect cross macos
+      - run: npm run build:mac
+      - name: Test the built app
+        run: npm run test:app
+        env:
+          PACKAGED_APP: release/mac-arm64/Password Protect.app/Contents/MacOS/Password Protect
       - uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: dist/*.dmg
+          path: release/*.dmg
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
@@ -84,7 +100,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - uses: actions/download-artifact@v4
         with:
-          name: windows
+          name: cli-windows
           path: dist
       - uses: actions/download-artifact@v4
         with:
@@ -127,12 +143,20 @@ jobs:
         with:
           name: macos
           path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cli-windows
+          path: cli
+      - uses: actions/download-artifact@v4
+        with:
+          name: program-macos
+          path: cli
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           VERSION="${TAG#v}"
-          mv artifacts/PasswordProtect.exe "artifacts/PasswordProtect-$VERSION-windows-x64.exe"
-          mv artifacts/*.dmg "artifacts/PasswordProtect-$VERSION-macos-arm64.dmg"
+          mv cli/PasswordProtect.exe "artifacts/protect-$VERSION-windows-x64.exe"
+          mv cli/protect "artifacts/protect-$VERSION-macos-arm64"
           gh release create "$TAG" artifacts/* --title "Password Protect $VERSION" --notes-file RELEASE_NOTES.md

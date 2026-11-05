@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'">
+  <title>Password Protect</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="bar">
+    <span class="brand">Password Protect</span>
+    <nav aria-label="Sections">
+      <button class="tab" data-view="protect" aria-current="page">Protect</button>
+      <button class="tab" data-view="check">Check</button>
+      <button class="tab" data-view="history">History</button>
+      <button class="tab" data-view="help">Help</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="protect" class="view">
+      <div id="stage"></div>
+    </section>
+
+    <section id="check" class="view" hidden>
+      <div class="sheet">
+        <h1>Check whether two copies match</h1>
+        <p class="lead">Every file and folder has its own seal and SHA-256. If one letter
+          inside changes, both change completely.</p>
+        <div class="row">
+          <button class="button" id="check-file">Choose file</button>
+          <button class="button" id="check-folder">Choose folder</button>
+        </div>
+        <div id="check-result" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="history" class="view" hidden>
+      <div class="sheet wide">
+        <div class="heading-row">
+          <h1>History on this computer</h1>
+          <label class="search">
+            <span class="visually-hidden">Search history</span>
+            <input id="history-search" type="search" placeholder="Search name, person or SHA-256">
+          </label>
+        </div>
+        <div id="history-list"></div>
+        <p class="footnote" id="history-footnote"></p>
+      </div>
+    </section>
+
+    <section id="help" class="view" hidden>
+      <article class="sheet manual">
+        <h1>How to use Password Protect</h1>
+        <p class="lead"><strong>Encrypting</strong> is called locking here, and
+          <strong>decrypting</strong> is called unlocking.</p>
+
+        <h2>Lock (encrypt) a file or folder</h2>
+        <ol>
+          <li>Open the <strong>Protect</strong> tab.</li>
+          <li>Drag the file or folder into the window, or choose <strong>Choose file</strong> or
+            <strong>Choose folder</strong>.</li>
+          <li>Type a password, then type it again. Use at least 8 characters.</li>
+          <li>Tick <strong>Delete the original once the locked copy has been checked</strong> if
+            you no longer want the unprotected copy.</li>
+          <li>Choose <strong>Lock</strong>.</li>
+        </ol>
+        <p>A new file ending in <code>.locked</code> appears next to the original. That is the file
+          to store or send. If you kept the original, that copy is still unprotected.</p>
+
+        <h2>Unlock (decrypt) a file or folder</h2>
+        <ol>
+          <li>Double-click the <code>.locked</code> file, or drag it into the
+            <strong>Protect</strong> tab.</li>
+          <li>Type the password.</li>
+          <li>Choose <strong>Unlock</strong>.</li>
+        </ol>
+        <p>The original appears next to the locked file, with its original name. A locked zip is
+          extracted as well.</p>
+
+        <h2>Send a locked file to someone</h2>
+        <ol>
+          <li>Send the <code>.locked</code> file by any route.</li>
+          <li>Tell them the password a different way, such as a phone call. Never put the password
+            in the same message as the file.</li>
+        </ol>
+        <p>Files move freely between Windows and Mac.</p>
+
+        <h2>Prove that nothing changed</h2>
+        <p>The seal and SHA-256 identify the contents. The same contents always give the same
+          seal, and any change gives a different one.</p>
+        <ol>
+          <li>When locking, choose <strong>Copy SHA-256</strong> and keep it.</li>
+          <li>On the other computer, open the locked file and choose
+            <strong>Check without unlocking</strong>.</li>
+          <li>Type the password, paste the SHA-256 and choose <strong>Check</strong>.</li>
+        </ol>
+        <p>You see <strong>Match</strong> or <strong>Does not match</strong>, and nothing is
+          unlocked. To check a file that is not locked, use the <strong>Check</strong> tab.</p>
+
+        <h2>See who locked or unlocked what</h2>
+        <p>The <strong>History</strong> tab lists each action on this computer, with the time, the
+          person logged in, the item and its seal. Each computer keeps its own history. A locked
+          file also carries who locked it and when, shown when it is unlocked or checked.</p>
+
+        <h2>If something goes wrong</h2>
+        <dl class="troubles">
+          <dt>Wrong password, or the file is corrupted</dt>
+          <dd>Check the password, including capital letters. If it still fails, the file may have
+            been damaged. Ask for a fresh copy.</dd>
+          <dt>Already exists</dt>
+          <dd>Something with that name is already in the folder, and it is never overwritten. Move
+            or rename it, then try again.</dd>
+          <dt>Forgotten password</dt>
+          <dd>The locked file cannot be opened by anyone. Use another copy of the original if you
+            have one.</dd>
+        </dl>
+      </article>
+    </section>
+  </main>
+
+  <div id="drop-veil" hidden><p>Drop to continue</p></div>
+  <script src="seal.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

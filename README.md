@@ -13,150 +13,53 @@ that its contents did not change.
 > **A forgotten password cannot be recovered.** There is no reset and no back
 > door. Keep it in a password manager.
 
+![Password Protect showing a locked file and its seal](docs/images/3-locked.png)
+
 ## Download
 
 Get the latest version from the [Releases page](../../releases/latest).
 
 | Your computer | Download |
 | --- | --- |
-| Windows 10 or 11 | `PasswordProtect-<version>-windows-x64.exe` |
-| Mac with Apple silicon (M1 or later) | `PasswordProtect-<version>-macos-arm64.dmg` |
+| Windows 10 or 11 | `PasswordProtect-<version>-win-x64.exe` |
+| Mac with Apple silicon (M1 or later) | `PasswordProtect-<version>-mac-arm64.dmg` |
 
-Neither download is signed with a paid developer certificate, so your computer
-warns you the first time.
+**The [user manual](docs/MANUAL.md) explains everything step by step,** including
+how to encrypt and decrypt a file, and how to prove that one did not change. The
+same instructions are on the **Help** tab in the app.
 
-**Windows:** if SmartScreen appears, choose **More info**, then **Run anyway**.
-There is nothing to install; the `.exe` is the whole app.
+## Quick start
 
-**Mac:** open the `.dmg` and drag **Password Protect** to **Applications**. Open
-it once. When macOS blocks it, go to **System Settings > Privacy & Security**,
-scroll down and choose **Open Anyway**.
+1. Install the app and open it.
+2. **To encrypt:** drag a file or folder into the window, enter a password and
+   choose **Lock**. You get a `.locked` file.
+3. **To decrypt:** double-click the `.locked` file, enter the password and choose
+   **Unlock**.
 
-## Lock a file or folder
-
-**Mac:** drag it onto the app, or open the app and choose **Choose File…** or
-**Choose Folder…**. Enter a password twice, then choose **Keep Original** or
-**Delete Original**.
-
-**Windows:** drag it onto `PasswordProtect.exe`, or double-click the `.exe` and
-drag it into the window, then press Enter. Answer the prompts. Nothing appears
-while you type a password; that is normal.
-
-You get `<name>.locked` beside the original, plus its SHA-256. Save the SHA-256
-if you may need to prove the contents later.
-
-If you keep the original, that copy is still unprotected. Only the `.locked` file
-is safe to store or send.
-
-Passwords must be at least 8 characters. Use a long passphrase: a weak password
-can be guessed however strong the encryption is.
-
-## Unlock
-
-**Mac:** double-click the `.locked` file, or drag it onto the app, then choose
-**Unlock**. **Windows:** drag it onto the `.exe` and answer `U`.
-
-Enter the password and the original appears beside the locked file. Existing
-files are never overwritten: if something of that name is already there, move it
-first. A locked `.zip` is extracted as well.
-
-To extract an ordinary `.zip`, drag it onto the app and choose **Extract**.
-
-## Check that nothing changed
-
-Every item has a SHA-256 fingerprint. If even one byte differs, the fingerprint
-is completely different. Unlocking checks this automatically, and reports
-`Verified: identical to what was locked`.
-
-### Compare two machines
-
-1. On the first machine, lock the item and note the SHA-256 it shows.
-2. Send the `.locked` file to the second machine.
-3. On the second machine, choose **Verify** (Mac) or answer `V` (Windows), enter
-   the password, and paste the SHA-256 from the first machine.
-4. You see `MATCH: identical content` or `DOES NOT MATCH`.
-
-**Verify needs the password** and writes nothing to disk, so it shows what is
-inside a locked file without unlocking it. It also shows who locked it.
-
-Send the SHA-256 by a different route from the file, such as a phone call or a
-separate message. Someone who could alter the file in transit could otherwise
-alter the fingerprint too.
-
-### See who did what
-
-**Mac:** open the app and choose **History & SHA-256…**, then **View History**.
-**Windows:** double-click the `.exe` and type `history`.
-
-Each entry shows the time, the action, the user and computer, the path, the
-SHA-256 and the result:
-
-| Result | Meaning |
-| --- | --- |
-| `First time recorded` | This content has not been seen on this computer |
-| `Unchanged` | Same content as the last time this item was recorded |
-| `CHANGED` | The content differs from the last time |
-| `Verified` | Unlocked content is identical to what was locked |
-| `MATCH` / `DOES NOT MATCH` | Result of comparing with another SHA-256 |
-
-### What the history can and cannot prove
-
-- **Each computer keeps its own history.** Nothing is sent anywhere, so to see
-  both sides, compare the history on both machines. Each `.locked` file also
-  carries, encrypted inside it, who locked it, when and its SHA-256, and that
-  travels with the file. Whether it was unlocked elsewhere is not recorded in it.
-- **"Who" means the account logged in to the computer.** It is not proof of a
-  person's identity.
-- **The history file is an ordinary file.** It stops honest mistakes rather than
-  a determined person with access to that computer. Copy it elsewhere if it has
-  to stand up as evidence.
-- **It contains file names and paths in plain text,** even though they are hidden
-  inside the `.locked` file. It never contains passwords.
-
-History is stored at:
-
-- **Mac:** `~/Library/Application Support/Password Protect/history.jsonl`
-- **Windows:** `%APPDATA%\PasswordProtect\history.jsonl`
-
-### Check a SHA-256 with other tools
-
-For a single file, the fingerprint is its ordinary SHA-256, so standard tools give
-the same answer:
-
-```sh
-shasum -a 256 report.pdf                # Mac
-certutil -hashfile report.pdf SHA256    # Windows
-```
-
-A folder's fingerprint covers every item's relative path and contents, so use
-`protect hash`. Moving the folder, renaming the folder itself, or changing only
-timestamps or permissions does not alter it. Renaming anything inside it does.
+Only the `.locked` file is protected. If you keep the original, that copy can still
+be opened by anyone with access to it.
 
 ## Command line
 
-On Mac the program is at
-`/Applications/Password Protect.app/Contents/Resources/protect`. On Windows, use
-the `.exe` in place of `protect`.
+Scripts can use the separate `protect` program from the Releases page.
 
 ```sh
-protect                                  # guided mode
 protect lock Reports                     # creates Reports.locked
 protect lock Reports --remove            # also deletes the verified original
-protect unlock Reports.locked            # restores beside the locked file
 protect unlock Reports.locked -o Restored
-protect unlock Reports.zip.locked --unzip
-protect unzip Reports.zip
-protect verify Reports.locked            # asks for the password, restores nothing
 protect verify Reports.locked --against <sha256>
-protect verify Reports.locked --against ./copy-of-Reports
 protect hash Reports                     # needs no password
-protect history                          # newest first
 protect history Reports --limit 10
+protect unzip Reports.zip
 ```
 
-`verify` exits with status 1 if the comparison fails. Scripts can supply the
-password with `--password-stdin`. It is never accepted as an argument, because
-arguments are visible to other programs.
+`verify` exits with status 1 if the comparison fails. `--password-stdin` supplies a
+password to scripts. It is never accepted as an argument, because arguments are
+visible to other programs.
+
+For a single file, the SHA-256 is its ordinary SHA-256, so `shasum -a 256` on a Mac
+and `certutil -hashfile <file> SHA256` on Windows give the same answer. A folder's
+SHA-256 covers each item's relative path and contents, so use `protect hash`.
 
 ## How it protects your files
 
@@ -179,18 +82,23 @@ arguments are visible to other programs.
   and symlinks are skipped unless Developer Mode is on. The app reports both.
 - Zips with their own password cannot be extracted.
 - Sockets, pipes and devices cannot be locked.
+- History is kept per computer, records the logged-in account rather than a proven
+  person, and is an ordinary editable file. It also contains file names. See the
+  [manual](docs/MANUAL.md#6-see-who-locked-or-unlocked-what).
 
 ## Development
 
 ```sh
 npm install
-npm test
-npm run build:mac                # the app and .dmg, for this Mac's CPU
-pwsh scripts/build-windows.ps1   # on Windows: dist/PasswordProtect.exe
+npm start                        # run the app
+npm test                         # engine tests
+npm run test:app                 # drive the real app
+npm run build:mac                # or build:win, writes to release/
 ```
 
-Pushing to `main` runs the tests on Windows and macOS and builds both apps.
-Pushing a tag such as `v1.1.0` also publishes them as a GitHub release.
+Pushing to `main` runs the tests on Windows and macOS. Pushing a tag such as
+`v1.2.0` also tests the built apps, checks that each OS opens what the other
+locked, and publishes a GitHub release.
 
 ## License
 
