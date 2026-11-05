@@ -12,7 +12,8 @@ import { _electron as electron } from 'playwright';
 
 delete process.env.ELECTRON_RUN_AS_NODE; // set inside VS Code terminals
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url));
+// No trailing separator: on Windows, \" in a command line escapes the quote.
+const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const CLI = path.join(ROOT, 'bin/protect.js');
 const PASSWORD = 'long enough password ✓';
 const SHOTS = process.env.SHOT_DIR;
