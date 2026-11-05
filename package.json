@@ -1,0 +1,20 @@
+{
+  "name": "password-protect",
+  "version": "1.1.0",
+  "description": "Password-protect any file or folder with authenticated encryption.",
+  "type": "module",
+  "bin": {
+    "protect": "bin/protect.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "build:mac": "sh scripts/build-mac.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
