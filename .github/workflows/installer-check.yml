@@ -1,0 +1,57 @@
+name: Check Windows installer
+
+# Installs a published release the way a person does and photographs the screen,
+# with no test tools attached to the app.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release to check
+        required: true
+
+jobs:
+  check:
+    runs-on: windows-latest
+    steps:
+      - name: Install and open
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release download $env:TAG --repo $env:REPO --pattern 'PasswordProtect-*-win-x64.exe' --dir setup
+          $installer = (Get-ChildItem setup/*.exe).FullName
+          Start-Process $installer -ArgumentList '/S' -Wait
+          $exe = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'Password Protect.exe' | Select-Object -First 1
+          if (-not $exe) {
+            Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Depth 2 | Select-Object FullName
+            throw 'The installed app was not found'
+          }
+          Write-Host "Installed at $($exe.FullName)"
+          Get-Process 'Password Protect' -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep 2
+          Start-Process $exe.FullName
+          Start-Sleep 25
+
+          $processes = Get-Process 'Password Protect' -ErrorAction SilentlyContinue
+          $processes | Format-Table Id, MainWindowTitle, MainWindowHandle, Responding -AutoSize | Out-String | Write-Host
+
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+          $bitmap = New-Object System.Drawing.Bitmap $screen.Width, $screen.Height
+          [System.Drawing.Graphics]::FromImage($bitmap).CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
+          New-Item -ItemType Directory -Force shots | Out-Null
+          $bitmap.Save("$PWD\shots\installed-app.png")
+
+          Get-WinEvent -FilterHashtable @{ LogName = 'Application'; Level = 2; StartTime = (Get-Date).AddMinutes(-3) } -ErrorAction SilentlyContinue |
+            Select-Object -First 5 TimeCreated, ProviderName, Message | Format-List | Out-String | Write-Host
+
+          $windows = $processes | Where-Object { $_.MainWindowTitle }
+          if (-not $windows) { throw 'The app is running but no window appeared' }
+          Write-Host "Window title: $($windows[0].MainWindowTitle)"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: installer-screenshot
+          path: shots/
