@@ -34,10 +34,16 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
       - run: pwsh scripts/build-windows.ps1
+      - run: node scripts/cross-check.mjs lock dist/PasswordProtect.exe cross windows
       - uses: actions/upload-artifact@v4
         with:
           name: windows
           path: dist/PasswordProtect.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sample-windows
+          path: cross/windows.*
           if-no-files-found: error
 
   macos:
@@ -50,15 +56,64 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
       - run: npm run build:mac
+      - run: node scripts/cross-check.mjs lock dist/protect cross macos
       - uses: actions/upload-artifact@v4
         with:
           name: macos
           path: dist/*.dmg
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: program-macos
+          path: dist/protect
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sample-macos
+          path: cross/macos.*
+          if-no-files-found: error
+
+  # Each OS's build must open what the other OS's build locked.
+  mac-to-windows:
+    needs: [windows, macos]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: sample-macos
+          path: cross
+      - run: node scripts/cross-check.mjs unlock dist/PasswordProtect.exe cross macos
+
+  windows-to-mac:
+    needs: [windows, macos]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: program-macos
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: sample-windows
+          path: cross
+      - run: chmod +x dist/protect
+      - run: node scripts/cross-check.mjs unlock dist/protect cross windows
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [windows, macos]
+    needs: [mac-to-windows, windows-to-mac]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -66,8 +121,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
+          name: windows
           path: artifacts
-          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos
+          path: artifacts
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
