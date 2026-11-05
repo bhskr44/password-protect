@@ -54,9 +54,11 @@ async function home() {
 
 before(async () => {
   // PACKAGED_APP tests the built app rather than the source.
+  // Its own profile, so that a copy of the app already open does not stop it.
+  const profile = `--user-data-dir=${path.join(base, 'profile')}`;
   const target = process.env.PACKAGED_APP
-    ? { executablePath: path.resolve(process.env.PACKAGED_APP) }
-    : { args: [ROOT] };
+    ? { executablePath: path.resolve(process.env.PACKAGED_APP), args: [profile] }
+    : { args: [ROOT, profile] };
   app = await electron.launch({
     ...target,
     env: { ...process.env, PROTECT_HISTORY_DIR: history },
