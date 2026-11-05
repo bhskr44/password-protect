@@ -21,7 +21,7 @@ Get the latest version from the [Releases page](../../releases/latest).
 
 | Your computer | Download |
 | --- | --- |
-| Windows 10 or 11 | `PasswordProtect-<version>-win-x64.exe` |
+| Windows 10 or 11 (64-bit) | `PasswordProtect-<version>-win-x64.exe` |
 | Mac with Apple silicon (M1 or later) | `PasswordProtect-<version>-mac-arm64.dmg` |
 
 **The [user manual](docs/MANUAL.md) explains everything step by step,** including
@@ -41,7 +41,7 @@ be opened by anyone with access to it.
 
 ## Command line
 
-Scripts can use the separate `protect` program from the Releases page.
+Scripts can use the `command-line-only` download from the Releases page.
 
 ```sh
 protect lock Reports                     # creates Reports.locked

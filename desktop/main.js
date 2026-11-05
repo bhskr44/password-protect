@@ -21,11 +21,17 @@ const pathsFromArgv = (argv) => argv.slice(app.isPackaged ? 1 : 2)
   .filter((arg) => !arg.startsWith('-') && fs.existsSync(arg))
   .map((arg) => path.resolve(arg));
 
+function bringToFront() {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
 function deliverPaths(paths) {
   if (!paths.length) return;
   if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+    bringToFront();
     mainWindow.webContents.send('open-paths', paths);
   } else {
     pendingPaths.push(...paths);
@@ -140,6 +146,11 @@ function createWindow() {
   window.webContents.on('will-navigate', (event) => event.preventDefault());
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   window.once('ready-to-show', () => window.show());
+  // ready-to-show can fail to arrive with some graphics drivers. A window that
+  // is slow to paint is better than one that never appears.
+  setTimeout(() => {
+    if (!window.isDestroyed() && !window.isVisible()) window.show();
+  }, 4000);
   window.on('close', (event) => {
     if (!busy) return;
     const choice = dialog.showMessageBoxSync(window, {
@@ -167,7 +178,11 @@ if (!app.requestSingleInstanceLock()) {
     event.preventDefault();
     deliverPaths([filePath]);
   });
-  app.on('second-instance', (_event, argv) => deliverPaths(pathsFromArgv(argv)));
+  // Opening the app again must always show it, even with no file to open.
+  app.on('second-instance', (_event, argv) => {
+    bringToFront();
+    deliverPaths(pathsFromArgv(argv));
+  });
   app.on('window-all-closed', () => app.quit());
   app.on('will-quit', removeTemps);
   app.on('activate', () => {

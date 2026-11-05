@@ -157,6 +157,6 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           VERSION="${TAG#v}"
-          mv cli/PasswordProtect.exe "artifacts/protect-$VERSION-windows-x64.exe"
-          mv cli/protect "artifacts/protect-$VERSION-macos-arm64"
+          mv cli/PasswordProtect.exe "artifacts/command-line-only-$VERSION-windows-x64.exe"
+          mv cli/protect "artifacts/command-line-only-$VERSION-macos-arm64"
           gh release create "$TAG" artifacts/* --title "Password Protect $VERSION" --notes-file RELEASE_NOTES.md

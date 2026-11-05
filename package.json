@@ -1,6 +1,6 @@
 {
   "name": "password-protect",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Password-protect any file or folder with authenticated encryption.",
   "type": "module",
   "bin": {

@@ -259,6 +259,18 @@ test('Help explains how to lock and unlock', async () => {
   await shot('11-help');
 });
 
+test('opening the app again brings a minimised window back', async () => {
+  const restored = await app.evaluate(async ({ app: electronApp, BrowserWindow }) => {
+    const [window] = BrowserWindow.getAllWindows();
+    window.minimize();
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    electronApp.emit('second-instance', {}, []);
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    return !window.isMinimized() && window.isVisible();
+  });
+  assert.equal(restored, true);
+});
+
 test('opening a file from the system goes to the right screen', async () => {
   const dir = workspace();
   const file = path.join(dir, 'opened.txt');

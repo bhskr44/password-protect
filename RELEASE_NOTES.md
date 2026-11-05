@@ -2,7 +2,7 @@ Lock any file or folder behind a password on Windows and macOS, and prove later 
 
 ## Get started
 
-**Windows 10 or 11:** download `PasswordProtect-*-win-x64.exe` and double-click it to install. If SmartScreen appears, choose **More info**, then **Run anyway**.
+**Windows 10 or 11 (64-bit):** download `PasswordProtect-*-win-x64.exe` and double-click it to install. If SmartScreen appears, choose **More info**, then **Run anyway**.
 
 **Mac with Apple silicon:** open `PasswordProtect-*-mac-arm64.dmg` and drag the app to Applications. Open it once, then go to **System Settings > Privacy & Security** and choose **Open Anyway**.
 
@@ -10,6 +10,8 @@ Neither app is signed with a paid developer certificate, which is why those warn
 
 ## New in this version
 
+- Opening the app again now always brings its window to the front.
+- The window now appears even if a graphics driver delays it.
 - A full desktop app with a window on both Windows and Mac. No terminal needed.
 - Drag and drop files and folders, and double-click `.locked` files to open them.
 - A seal drawn from each SHA-256, so two copies can be compared at a glance.
@@ -25,6 +27,6 @@ Files locked with earlier versions still unlock.
 - Compares SHA-256 values between machines to show nothing changed
 - Unlocks and extracts `.zip` files in one step
 
-The `protect` files are the command-line program for scripts. Most people do not need them.
+The `command-line-only` files are for scripts and open no window. Most people do not need them.
 
 **A forgotten password cannot be recovered.**

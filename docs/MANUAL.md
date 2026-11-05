@@ -26,14 +26,19 @@ The same instructions are in the app, on the **Help** tab.
 Download the app from the
 [Releases page](https://github.com/bhskr44/password-protect/releases/latest).
 
-### On Windows 10 or 11
+### On Windows 10 or 11 (64-bit)
+
+Windows 7, Windows 8 and 32-bit Windows are not supported.
 
 1. Download `PasswordProtect-<version>-win-x64.exe`.
 2. Double-click the download.
 3. If Windows shows **Windows protected your PC**, choose **More info**, then
    **Run anyway**.
-4. The app installs and opens. Find it later in the Start menu as
-   **Password Protect**.
+4. A small progress bar appears for a few seconds. The app then installs and
+   opens by itself. Find it later in the Start menu as **Password Protect**.
+
+Files named `command-line-only` open no window. They are only for scripts, so do
+not download them.
 
 ### On a Mac with Apple silicon (M1 or later)
 
@@ -181,6 +186,18 @@ password cannot be extracted.
 | The disk is full | Free some space. Locking needs room for a full copy. |
 | Renamed for Windows | The Mac name used characters Windows cannot store, such as `?`. The contents are unchanged. |
 | Skipped symlink | Windows needs Developer Mode to restore shortcuts of this type. |
+
+**No window appears on Windows:**
+
+1. Make sure you downloaded `PasswordProtect-<version>-win-x64.exe` from the
+   latest release, not an older `.exe` or a `command-line-only` file. A black text
+   window means you have one of those.
+2. Run that download once to install it. Then open **Password Protect** from the
+   Start menu, not the download.
+3. Check for it behind other windows, or on the taskbar.
+4. Check your version of Windows: press the Windows key, type `winver` and press
+   Enter. You need Windows 10 or 11. Choose **Settings > System > About** and
+   check that **System type** says 64-bit.
 
 **Forgotten password:** the locked file cannot be opened by anyone. Use another
 copy of the original if you have one.
